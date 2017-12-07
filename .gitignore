@@ -1,0 +1,9 @@
+*.m3u8
+.vscode
+local_tools/*
+config/utterances.txt
+twitch-box
+*.mprof
+*.prof
+*.test
+coverage.out

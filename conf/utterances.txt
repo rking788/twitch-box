@@ -1,0 +1,137 @@
+CountItem tell me how many {Item} I have
+CountItem tell me how much {Item} I have
+CountItem see how many {Item} I have
+CountItem see how much {Item} I have
+CountItem check how many {Item} I have
+CountItem check how much {Item} I have
+TransferItem transfer all of my {Item} to my {Destination}
+TransferItem transfer all {Item} to my {Destination}
+TransferItem transfer my {Item} to my {Destination}
+TransferItem transfer {Count} {Item} to my {Destination}
+UnloadEngrams unload all my engrams
+UnloadEngrams send my engrams to the vault
+UnloadEngrams I'm ready to farm
+UnloadEngrams farm mode engage
+UnloadEngrams lets farm
+UnloadEngrams transfer all engrams to the vault
+UnloadEngrams make space for farming
+UnloadEngrams make space in my inventory
+UnloadEngrams i need space in my inventory
+EquipMaxLight equip my max light loadout
+EquipMaxLight equip max light
+EquipMaxLight max the light on my current character
+EquipMaxLight equip my highest light gear
+EquipMaxLight equip my gear with the highest light
+EquipMaxLight max my light
+EquipMaxLight maximize my light
+EquipMaxLight equip my most powerful loadout
+EquipMaxLight equip my best loadout
+EquipMaxLight equip my max power loadout
+EquipMaxLight equip max power
+EquipMaxLight max the power on my current character
+EquipMaxLight equip my highest power gear
+EquipMaxLight equip my gear with the highest power
+EquipMaxLight max my power
+EquipMaxLight maximize my power
+DestinyJoke tell me a joke
+DestinyJoke tell me something funny
+DestinyJoke do you know any jokes
+DestinyJoke have any jokes
+DestinyJoke make me laugh
+DestinyJoke i want to hear a joke
+DestinyJoke hear any good jokes
+DestinyJoke i'm ready to laugh
+CreateLoadout create a loadout from my current equipment
+CreateLoadout create a new named loadout
+CreateLoadout create a new loadout from my gear
+CreateLoadout create a new loadout from my current gear
+CreateLoadout create a loadout named {Name}
+CreateLoadout make a new loadout named {Name}
+CreateLoadout make a new loadout from my current equipment
+CreateLoadout make a new loadout from my gear
+CreateLoadout make a new loadout from my current gear
+CreateLoadout make this my {Name} loadout
+CreateLoadout save a new loadout from my current equipment
+CreateLoadout save a new loadout from my current gear
+CreateLoadout save this loadout
+CreateLoadout save this loadout for later
+CreateLoadout save this loadout with the name {Name}
+CreateLoadout save this as my {Name} loadout
+EquipNamedLoadout equip my {Name} loadout
+EquipNamedLoadout restore my {Name} loadout
+EquipNamedLoadout equip the gear from my {Name} loadout
+EquipNamedLoadout put the gear from my {Name} loadout on my character
+EquipNamedLoadout put my {Name} gear on my current character
+EquipNamedLoadout put my {Name} loadout on this character
+EquipNamedLoadout use my {Name} loadout
+EquipNamedLoadout start using my {Name} loadout
+TrialsCurrentMap what the current Trials map is
+TrialsCurrentMap what is the current Trials map
+TrialsCurrentMap current Trials map
+TrialsCurrentMap what is the Trials map this week
+TrialsCurrentMap this week's Trials map
+TrialsCurrentMap for the current Trials map
+TrialsCurrentMap what is the Trials map for this week
+TrialsCurrentMap Trials map this week
+TrialsCurrentMap Trials map for the current week
+TrialsCurrentMap Trials of Osiris map this week
+TrialsCurrentMap what is the current Trials of Osiris map
+TrialsCurrentMap what is the Trials of Osiris map for the current week
+TrialsCurrentMap current Trials of Osiris map
+TrialsCurrentMap this week's Trials os Osiris map
+TrialsCurrentMap what is the Trials of osiris map for the this week
+TrialsCurrentWeek current trials stats
+TrialsCurrentWeek trials stats this week
+TrialsCurrentWeek stats for this current trials week
+TrialsCurrentWeek current trials of Osiris stats
+TrialsCurrentWeek trials of Osiris stats this week
+TrialsCurrentWeek current trials performance this week
+TrialsCurrentWeek performance in trials this week
+TrialsCurrentWeek what are my current trials stats
+TrialsCurrentWeek what are my current trials of Osiris stats
+TrialsCurrentWeek find my current trials stats
+TrialsCurrentWeek find my current trials of Osiris stats
+TrialsCurrentWeek tell me my current trials stats
+TrialsCurrentWeek lookup my current trials stats
+TrialsCurrentWeek how am I doing in trials this week
+TrialsCurrentWeek how good am I doing in trials this week
+TrialsCurrentWeek how bad am I doing in trials this week
+TrialsPersonalTopWeapons my top used weapons in trials
+TrialsPersonalTopWeapons my top used weapons in trials of osiris
+TrialsPersonalTopWeapons my most common used weapons in trials
+TrialsPersonalTopWeapons the weapons I use the most in trials
+TrialsPersonalTopWeapons my top trials weapons
+TrialsPersonalTopWeapons my top trials of osiris weapons
+TrialsPersonalTopWeapons the weapons I use the most in trials of osiris
+TrialsPersonalTopWeapons my most common used weapons in trials of osiris
+TrialsPersonalTopWeapons the weapons used most by me
+TrialsPopularWeaponTypes what weapon types are popular in Trials of Osiris
+TrialsPopularWeaponTypes what weapons are popular in trials
+TrialsPopularWeaponTypes what types of weapons are popular in trials
+TrialsPopularWeaponTypes what types of weapons are popular in Trials of Osiris
+TrialsPopularWeaponTypes what weapon types are players using in trials
+TrialsPopularWeaponTypes what weapons types are players using in Trials of Osiris
+TrialsPopularWeaponTypes what types of weapons are players using in trials this week
+TrialsPopularWeaponTypes what types of weapons are people using in trials this week
+TrialsPopularWeaponTypes what types of weapons are players using in trials of Osiris this week
+TrialsPopularWeaponTypes what types of weapons are people using in trials of Osiris this week
+TrialsPopularWeaponTypes popular weapon types in trials
+TrialsPopularWeaponTypes most used weapons types in trials
+TrialsPopularWeaponTypes most common weapons types in trials
+TrialsTopWeapons find the most popular weapons this week in trials
+TrialsTopWeapons what are the most popular trials weapons for this week
+TrialsTopWeapons find the most popular weapons in trials this week
+TrialsTopWeapons find the most popular weapons in trials of Osiris this week
+TrialsTopWeapons what are the most popular weapons in trials of Osiris this week
+TrialsTopWeapons most popular trials weapons for the current week
+TrialsTopWeapons most popular trials of Osiris weapons this week
+TrialsTopWeapons what are the popular trials weapons this week
+TrialsTopWeapons what are the most used trials weapons this week
+TrialsTopWeapons what are the most used trials of Osiris weapons this week
+TrialsTopWeapons what are the most common trials weapons for the current week
+TrialsTopWeapons find the top trials weapons this week
+TrialsTopWeapons find the top trials of Osiris weapons this week
+TrialsTopWeapons what are the top trials weapons for the current week
+TrialsTopWeapons what are the top trials of Osiris weapons this week
+TrialsTopWeapons this week's top trials weapons
+TrialsTopWeapons the current week's top trials weapons
