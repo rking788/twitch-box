@@ -3,6 +3,7 @@ package alexa
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/kpango/glg"
 	"github.com/rking788/go-alexa/skillserver"
@@ -32,7 +33,8 @@ func StartAudioStream(echoRequest *skillserver.EchoRequest) (response *skillserv
 	if accessToken == "" {
 		response := skillserver.NewEchoResponse()
 		response.
-			OutputSpeech("Sorry, it looks like your Twitch account needs to be linked in the Alexa app.").
+			OutputSpeech("Sorry, it looks like your Twitch account needs to be linked in " +
+				"the Alexa app.").
 			LinkAccountCard()
 		return response
 	}
@@ -69,7 +71,19 @@ func StartAudioStream(echoRequest *skillserver.EchoRequest) (response *skillserv
 		return
 	}
 
-	selectedStream := liveStreams.Data[0]
+	command := twitch.PLAY
+	switch echoRequest.GetIntentName() {
+	case "AMAZON.ResumeIntent":
+		command = twitch.RESUME
+	case "AMAZON.PreviousIntent":
+		command = twitch.PREVIOUS
+	case "AMAZON.NextIntent":
+		command = twitch.NEXT
+	case "AMAZON.PauseIntent":
+		command = twitch.PAUSE
+	}
+
+	selectedStream := twitch.FindStreamForCommand(user, liveStreams.Data, command, response)
 	followedUser, err := twitch.GetUserByID(client, accessToken, selectedStream.UserID)
 	if err != nil {
 		fmt.Println("Error loading followed channel's user data: ", err.Error())
@@ -101,9 +115,16 @@ func StartAudioStream(echoRequest *skillserver.EchoRequest) (response *skillserv
 	glg.Debugf("Found stream URL: %s\n", streamVariant.URI)
 
 	response.OutputSpeech(fmt.Sprintf("Starting stream for %s", followedUser.DisplayName))
+	twitch.SaveUsersCurrentStream(user, selectedStream)
 	if streamVariant.Video == "audio_only" {
 		glg.Debug("Sending Audio directive response")
+		// TODO: This should only create a card if they are starting a new stream,
+		// not resuming or skipping
+		widthReplaced := strings.Replace(selectedStream.ThumbnailURL, "{width}", "320", -1)
+		heightReplaced := strings.Replace(widthReplaced, "{height}", "180", -1)
 		response.AppendAudioDirective(NewAudioDirectiveWithStreamURL(streamVariant.URI))
+		glg.Debugf("Setting card thumbnail to be: %s", heightReplaced)
+		response.StandardCard(followedUser.DisplayName, selectedStream.Title, heightReplaced, heightReplaced)
 	} else {
 		glg.Debug("Sending video directive response")
 		response.AppendVideoDirective(NewVideoDirectiveWithStreamURL(streamVariant.URI, selectedStream.Title, followedUser.DisplayName))

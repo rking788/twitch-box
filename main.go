@@ -8,6 +8,7 @@ import (
 	"github.com/kpango/glg"
 	"github.com/rking788/go-alexa/skillserver"
 	"github.com/rking788/twitch-box/alexa"
+	"github.com/rking788/twitch-box/twitch"
 )
 
 // AlexaHandler is the type of function that should be used to respond to a specific intent.
@@ -16,13 +17,25 @@ type AlexaHandler func(*skillserver.EchoRequest) *skillserver.EchoResponse
 // AlexaHandlers are the handler functions mapped by the intent name that they should handle.
 var (
 	AlexaHandlers = map[string]AlexaHandler{
-		"StartAudioStream": alexa.StartAudioStream,
-		"StartVideoStream": alexa.StartVideoStream,
+		"StartAudioStream":      alexa.StartAudioStream,
+		"StartVideoStream":      alexa.StartVideoStream,
+		"AMAZON.NextIntent":     alexa.StartAudioStream,
+		"AMAZON.PreviousIntent": alexa.StartAudioStream,
+		"AMAZON.ResumeIntent":   alexa.StartAudioStream,
 	}
 )
 
 // Applications is a definition of the Alexa applications running on this server.
 var applications map[string]interface{}
+
+const (
+	FATAL uint = iota
+	ERROR
+	WARNING
+	INFO
+	DEBUG
+	ALL
+)
 
 // InitEnv is responsible for initializing all components (including sub-packages) that
 // depend on a specific deployment environment configuration.
@@ -39,6 +52,28 @@ func InitEnv() {
 			Handler: healthHandler,
 		},
 	}
+
+	// Configure logging
+	logger := glg.Get()
+	level, ok := map[string]uint{"FATAL": FATAL, "ERROR": ERROR,
+		"WARNING": WARNING, "INFO": INFO, "DEBUG": DEBUG,
+		"ALL": ALL}[os.Getenv("TWITCH_BOX_LOG_LEVEL")]
+	if !ok {
+		level = WARNING
+	}
+
+	if level < DEBUG {
+		logger.SetLevelMode(glg.DEBG, glg.NONE)
+	}
+	if level < INFO {
+		logger.SetLevelMode(glg.INFO, glg.NONE)
+	}
+	if level < WARNING {
+		logger.SetLevelMode(glg.WARN, glg.NONE)
+	}
+	if level < ERROR {
+		logger.SetLevelMode(glg.ERR, glg.NONE)
+	}
 }
 
 func main() {
@@ -48,6 +83,7 @@ func main() {
 	//	config = loadConfig(configPath)
 
 	//	glg.Infof("Loaded config : %+v\n", config)
+	twitch.InitEnv(os.Getenv("REDIS_URL"))
 	InitEnv()
 
 	//	defer CloseLogger()
@@ -106,8 +142,6 @@ func EchoIntentHandler(echoRequest *skillserver.EchoRequest, echoResponse *skill
 	// AMAZON.CancelIntent
 	// AMAZON.LoopOffIntent
 	// AMAZON.LoopOnIntent
-	// AMAZON.NextIntent
-	// AMAZON.PreviousIntent
 	// AMAZON.RepeatIntent
 	// AMAZON.ResumeIntent
 	// AMAZON.ShuffleOffIntent
@@ -123,7 +157,6 @@ func EchoIntentHandler(echoRequest *skillserver.EchoRequest, echoResponse *skill
 		response = skillserver.NewEchoResponse()
 	} else if intentName == "AMAZON.PauseIntent" {
 		// Send stop directive
-		// TODO: Should remember the last stream the user listened to so that it can be resumed.
 		response = alexa.StopAudioDirective()
 	} else if ok {
 		response = handler(echoRequest)

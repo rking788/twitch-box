@@ -1,5 +1,18 @@
 package twitch
 
+import "fmt"
+
+type PlaybackCommand int
+
+const (
+	PLAY PlaybackCommand = iota
+	RESUME
+	PAUSE
+	PREVIOUS
+	NEXT
+	STOP
+)
+
 // StreamsResponse container around the Twitch streams response.
 type StreamsResponse struct {
 	Data []*Stream
@@ -17,6 +30,10 @@ type Stream struct {
 	ThumbnailURL string   `json:"thumbnail_url"`
 }
 
+func (s *Stream) String() string {
+	return fmt.Sprintf("%+v", *s)
+}
+
 // UserResponse is a container around the response from the Twitch /users endpoint
 type UserResponse struct {
 	Data []*User
@@ -29,6 +46,10 @@ type User struct {
 	DisplayName     string `json:"display_name"`
 	Type            string `json:"type"`
 	BroadcasterType string `json:"broadcaster_type"`
+}
+
+func (u *User) String() string {
+	return fmt.Sprintf("%+v", *u)
 }
 
 // Follows is a wrapper around the response when requesting a set of follower relationships
@@ -52,6 +73,10 @@ func (follows *Follows) FollowIDsList() []string {
 type Follow struct {
 	FromID string `json:"from_id"`
 	ToID   string `json:"to_id"`
+}
+
+func (f *Follow) String() string {
+	return fmt.Sprintf("%+v", *f)
 }
 
 // Pagination wraps the cursor used to perform pagination on endpoints that support it. The
