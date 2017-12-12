@@ -72,10 +72,10 @@
 			"revisionTime": "2017-07-19T02:51:28Z"
 		},
 		{
-			"checksumSHA1": "nHRUdRsWtdDcO4wxpBnfy25rgVc=",
+			"checksumSHA1": "wa8WZTT9OSGeh2NRlf04H8aXlE0=",
 			"path": "github.com/rking788/go-alexa/skillserver",
-			"revision": "464f8353bda785df3d4621b74059a8d9752dc263",
-			"revisionTime": "2017-11-16T02:37:29Z"
+			"revision": "33ee1a3e5ee56b59466e8722256214fb9666738e",
+			"revisionTime": "2017-12-12T02:35:58Z"
 		}
 	],
 	"rootPath": "github.com/rking788/twitch-box"

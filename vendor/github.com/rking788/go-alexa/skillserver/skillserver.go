@@ -25,11 +25,12 @@ import (
 )
 
 type EchoApplication struct {
-	AppID          string
-	Handler        func(http.ResponseWriter, *http.Request)
-	OnLaunch       func(*EchoRequest, *EchoResponse)
-	OnIntent       func(*EchoRequest, *EchoResponse)
-	OnSessionEnded func(*EchoRequest, *EchoResponse)
+	AppID              string
+	Handler            func(http.ResponseWriter, *http.Request)
+	OnLaunch           func(*EchoRequest, *EchoResponse)
+	OnIntent           func(*EchoRequest, *EchoResponse)
+	OnSessionEnded     func(*EchoRequest, *EchoResponse)
+	OnAudioPlayerState func(*EchoRequest, *EchoResponse)
 }
 
 type StdApplication struct {
@@ -83,6 +84,11 @@ func Init(apps map[string]interface{}, router *mux.Router) {
 					if app.OnSessionEnded != nil {
 						app.OnSessionEnded(echoReq, echoResp)
 					}
+				} else if strings.HasPrefix(echoReq.GetRequestType(), "AudioPlayer.") {
+					fmt.Println("Dispatching to on player state handler")
+					if app.OnAudioPlayerState != nil {
+						app.OnAudioPlayerState(echoReq, echoResp)
+					}
 				} else {
 					http.Error(w, "Invalid request.", http.StatusBadRequest)
 				}
@@ -133,18 +139,21 @@ func verifyJSON(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 	reader := bytes.NewReader(requestBytes)
 	err := json.NewDecoder(reader).Decode(&echoReq)
 	if err != nil {
+		fmt.Printf("Error decoding request: %s\n", err.Error())
 		HTTPError(w, err.Error(), "Bad Request", 400)
 		return
 	}
 
 	// Check the timestamp
 	if !echoReq.VerifyTimestamp() && r.URL.Query().Get("_dev") == "" {
+		fmt.Println("Error verifying timestamp")
 		HTTPError(w, "Request too old to continue (>150s).", "Bad Request", 400)
 		return
 	}
 
 	// Check the app id
 	if !echoReq.VerifyAppID(Applications[r.URL.Path].(EchoApplication).AppID) {
+		fmt.Println("Error verifying appID")
 		HTTPError(w, "Echo AppID mismatch!", "Bad Request", 400)
 		return
 	}

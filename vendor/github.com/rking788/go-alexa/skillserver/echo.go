@@ -3,6 +3,7 @@ package skillserver
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 )
 
@@ -41,7 +42,15 @@ func (this *EchoRequest) VerifyTimestamp() bool {
 }
 
 func (this *EchoRequest) VerifyAppID(myAppID string) bool {
-	if this.Session.Application.ApplicationID == myAppID {
+
+	fmt.Printf("Request for appID verification: %+v\n", this)
+
+	fmt.Printf("VerifyAppID ==========######\n")
+	fmt.Printf("Session.applicationID = %s\n", this.Session.Application.ApplicationID)
+	fmt.Printf("Context.applicationID = %s\n", this.Context.System.Application.ApplicationID)
+
+	if this.Session.Application.ApplicationID == myAppID ||
+		this.Context.System.Application.ApplicationID == myAppID {
 		return true
 	}
 
@@ -295,6 +304,9 @@ type EchoContext struct {
 			DeviceId           string                 `json:"deviceId,omitempty"`
 			SupportedIntefaces map[string]interface{} `json:"supportedInterfaces,omitempty"`
 		} `json:"device,omitempty"`
+		Application struct {
+			ApplicationID string `json:"applicationId,omitempty"`
+		} `json:"application,omitempty"`
 	} `json:"System,omitempty"`
 }
 
