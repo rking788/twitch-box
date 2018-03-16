@@ -1,4 +1,4 @@
-package twitch
+package providers
 
 import (
 	"fmt"
@@ -122,6 +122,10 @@ func TestGetUsersRecentStreamUserIDs(t *testing.T) {
 	}
 
 	userIDs := getRecentStreamUserIDs(mockUser)
+
+	if len(userIDs) == 0 {
+		t.Fatal("Zero user IDs found in recent streams")
+	}
 	if userIDs[0] != mockStream1.UserID {
 		t.Fatalf("List of streamer's user IDs is incorrect for recent streams with a single entry")
 	}
@@ -254,9 +258,9 @@ func createRandomMockUser() *User {
 	}
 }
 
-func createRandomMockStream() *Stream {
+func createRandomMockStream() *TwitchStream {
 	seed := fmt.Sprintf("%d", rand.Intn(1000))
-	return &Stream{
+	return &TwitchStream{
 		ID:           "id" + seed,
 		UserID:       "userID" + seed,
 		CommunityIDs: nil,

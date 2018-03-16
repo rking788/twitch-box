@@ -8,11 +8,11 @@ import (
 	"github.com/kpango/glg"
 	"github.com/rking788/go-alexa/skillserver"
 	"github.com/rking788/twitch-box/alexa"
-	"github.com/rking788/twitch-box/twitch"
+	"github.com/rking788/twitch-box/providers"
 )
 
 // AlexaHandler is the type of function that should be used to respond to a specific intent.
-type AlexaHandler func(*skillserver.EchoRequest) *skillserver.EchoResponse
+type AlexaHandler func(*skillserver.EchoRequest, providers.StreamProvider) *skillserver.EchoResponse
 
 // AlexaHandlers are the handler functions mapped by the intent name that they should handle.
 var (
@@ -83,7 +83,8 @@ func main() {
 	//	config = loadConfig(configPath)
 
 	//	glg.Infof("Loaded config : %+v\n", config)
-	twitch.InitEnv(os.Getenv("REDIS_URL"))
+	providers.InitEnv(os.Getenv("REDIS_URL"))
+
 	InitEnv()
 
 	//	defer CloseLogger()
@@ -148,6 +149,8 @@ func EchoIntentHandler(echoRequest *skillserver.EchoRequest, echoResponse *skill
 	// AMAZON.ShuffleOnIntent
 	// AMAZON.StartOverIntent
 
+	provider := providers.NewMixerClient("")
+
 	handler, ok := AlexaHandlers[intentName]
 	if echoRequest.GetRequestType() == "LaunchRequest" {
 		response = alexa.WelcomePrompt(echoRequest)
@@ -159,7 +162,7 @@ func EchoIntentHandler(echoRequest *skillserver.EchoRequest, echoResponse *skill
 		// Send stop directive
 		response = alexa.StopAudioDirective()
 	} else if ok {
-		response = handler(echoRequest)
+		response = handler(echoRequest, provider)
 	} else {
 		response = skillserver.NewEchoResponse()
 		response.OutputSpeech("Sorry Guardian, I did not understand your request.")

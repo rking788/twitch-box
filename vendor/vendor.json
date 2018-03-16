@@ -1,7 +1,7 @@
 {
 	"comment": "",
 	"heroku": {
-		"goVersion": "go1.9"
+		"goVersion": "go1.10"
 	},
 	"ignore": "test",
 	"package": [

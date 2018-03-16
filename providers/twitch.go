@@ -1,4 +1,4 @@
-package twitch
+package providers
 
 import (
 	"encoding/json"
@@ -7,13 +7,13 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/grafov/m3u8"
 	"github.com/kpango/glg"
-	"github.com/rking788/go-alexa/skillserver"
 )
 
 // The constant definitions for the URLs to be used to interact with the Twitch API.
@@ -25,29 +25,115 @@ const (
 	GetStreamsURLFormat         = "https://usher.ttvnw.net/api/channel/hls/%s.m3u8?player=twitchweb&token=%s&sig=%s&allow_audio_only=true&allow_source=false&type=any&p=%d"
 )
 
-var redisConnPool *redis.Pool
-
-// InitEnv provides a package level initialization point for any work that is environment specific
-func InitEnv(redisURL string) {
-	redisConnPool = newRedisPool(redisURL)
+// TwitchClient is a type that will wrap properties needed to make requests
+// to the Mixer public API.
+type TwitchClient struct {
+	PlatformName string
+	BaseURL      string
+	*http.Client
 }
 
-// Redis related functions
+/**
+ * Stream Provider implementation
+ */
 
-func newRedisPool(addr string) *redis.Pool {
-	// 25 is the maximum number of active connections for the Heroku Redis free tier
-	return &redis.Pool{
-		MaxIdle:     3,
-		MaxActive:   25,
-		IdleTimeout: 240 * time.Second,
-		Dial:        func() (redis.Conn, error) { return redis.DialURL(addr) },
+func genericGetStream(token string, cmd PlaybackCommand) (*Stream, error) {
+
+	client := &http.Client{}
+
+	// Use empty UID to get current user
+	user, err := GetUserByID(client, token, "")
+	if err != nil {
+		fmt.Println("Error loading the current user: ", err.Error())
+		return nil, errors.New("There was an error loading your Twitch account," +
+			" please try again later.")
 	}
+	glg.Debugf("Found user: %+v\n", user)
+
+	follows, err := GetFollows(client, user)
+	if err != nil {
+		fmt.Println("Error loading user's follows: ", err.Error())
+		return nil, errors.New("Failed to load your follows from Twitch, please try again later")
+	}
+
+	followIDs := follows.FollowIDsList()
+
+	// Request all live streams based on all of the followed user_id values.
+	// This will return only live channels and the first ID of that set should be used in
+	// this next call.
+	liveStreams, err := FindLiveStreams(client, followIDs)
+
+	if len(liveStreams.Data) <= 0 {
+		return nil, errors.New("Sorry, it looks like none of your followed channels are live right now")
+	}
+
+	selectedStream, err := FindStreamForCommand(user, liveStreams.Data, cmd)
+	if err != nil {
+		return nil, err
+	}
+	followedUser, err := GetUserByID(client, token, selectedStream.UserID)
+	if err != nil {
+		fmt.Println("Error loading followed channel's user data: ", err.Error())
+		return nil, errors.New("Failed to find a followed stream, please try again later")
+	}
+
+	glg.Debugf("Found followed user: %+v\n", followedUser)
+
+	// If the device can play video, then play video; otherwise just play audio
+	streamQuality := "audio_only"
+	// supportedInterfaces := echoRequest.Context.System.Device.SupportedIntefaces
+	// supportsVideo := (supportedInterfaces["VideoPlayer"] != nil) || (supportedInterfaces["VideoApp"] != nil)
+	supportsVideo := false
+	if supportsVideo {
+		glg.Debug("Looking for video stream...")
+		streamQuality = "720p"
+	} else {
+		glg.Debug("Only supports audio playback...")
+		streamQuality = "audio_only"
+	}
+
+	streamVariant, err := GetStream(client, followedUser.Login, token, streamQuality)
+	if err != nil {
+		fmt.Println("Error loading stream Variant: ", err.Error())
+		return nil, errors.New("Failed to find a stream URL, please try again later")
+	}
+
+	glg.Debugf("Found stream URL: %s\n", streamVariant.URI)
+
+	SaveUsersCurrentStream(user, selectedStream)
+
+	channelID, err := strconv.ParseUint(selectedStream.ID, 10, 64)
+
+	stream := &Stream{
+		Name:      selectedStream.UserID,
+		Title:     selectedStream.Title,
+		ChannelID: uint(channelID),
+		Variant:   streamVariant,
+	}
+
+	return stream, nil
+}
+
+func (client *TwitchClient) Play(token string) (*Stream, error) {
+	return genericGetStream(token, PLAY)
+}
+
+func (client *TwitchClient) Next(token string) (*Stream, error) {
+	return genericGetStream(token, NEXT)
+}
+
+func (client *TwitchClient) Resume(token string) (*Stream, error) {
+	return genericGetStream(token, RESUME)
+}
+
+func (client *TwitchClient) Previous(token string) (*Stream, error) {
+	return genericGetStream(token, PREVIOUS)
 }
 
 // SaveUsersCurrentStream will append the provided stream's User ID to the list
 // of recently played. The list is set to automatically expire after 24 hours.
 // This expiration time will be updated on each stream start.
-func SaveUsersCurrentStream(user *User, stream *Stream) {
+func SaveUsersCurrentStream(user *User, stream *TwitchStream) {
 	if user == nil || stream == nil {
 		glg.Warn("Cannot save current stream, nil user or stream param")
 		return
@@ -294,10 +380,12 @@ func GetStream(client *http.Client, channelName, accessToken, streamQuality stri
 	return streamVariant, nil
 }
 
-func FindStreamForCommand(user *User, liveStreams []*Stream, command PlaybackCommand, response *skillserver.EchoResponse) *Stream {
+// FindStreamForCommand will find the correct stream to be played next based on the current state
+// and the command issued to Alexa.
+func FindStreamForCommand(user *User, liveStreams []*TwitchStream, command PlaybackCommand) (*TwitchStream, error) {
 
 	if command == PLAY {
-		return liveStreams[0]
+		return liveStreams[0], nil
 	}
 
 	index := 0
@@ -316,14 +404,14 @@ func FindStreamForCommand(user *User, liveStreams []*Stream, command PlaybackCom
 					glg.Infof("Resuming stream with UserID: %s", liveStreams[index].UserID)
 				}
 			} else {
-				response.OutputSpeech("It looks like that user isn't streaming right now. ")
+				return nil, errors.New("It looks like that user isn't streaming right now. ")
 			}
 		}
 	} else if command == PREVIOUS {
 		for {
 			prevUID := removeCurrentStream(user)
 			if prevUID == "" {
-				response.OutputSpeech("It looks like none of your previously listened streams " + "are live right now")
+				return nil, errors.New("It looks like none of your previously listened streams " + "are live right now")
 				break
 			}
 
@@ -336,12 +424,12 @@ func FindStreamForCommand(user *User, liveStreams []*Stream, command PlaybackCom
 		}
 	}
 
-	return liveStreams[index]
+	return liveStreams[index], nil
 }
 
 // findIndexForStreamer will return the index in the live stream slice for the specified user
 // ID. -1 is returned if the user ID is not found in the list.
-func findIndexForStreamer(uid string, haystack []*Stream) int {
+func findIndexForStreamer(uid string, haystack []*TwitchStream) int {
 	needle := -1
 
 	for index, stream := range haystack {
